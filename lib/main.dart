@@ -111,6 +111,10 @@ Stream<Array2D> counter(int width, int height) async* {
 }
 
 class _Array2DPaint extends CustomPainter {
+  static final blue = Paint()
+    ..color = const Color(0xFF0D47A1)
+    ..style = PaintingStyle.fill;
+
   final Array2D data;
 
   _Array2DPaint(this.data);
@@ -119,14 +123,11 @@ class _Array2DPaint extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final height = size.height / data.height;
     final width = size.width / data.width;
-    final paint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
 
     for (var y = 0; y < data.height; y++) {
       for (var x = 0; x < data.width; x++) {
         if (data.get(x, y) == 1) {
-          canvas.drawRect(Rect.fromLTWH(x * width, y * height, width, height), paint);
+          canvas.drawRect(Rect.fromLTWH(x * width, y * height, width, height), blue);
         }
       }
     }
