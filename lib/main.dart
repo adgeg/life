@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life/array_2d.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,21 +28,98 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return const Scaffold(
+      body: _Array2D(),
+    );
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(title),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(title),
+      ),
+      body: StreamBuilder<Array2D>(
+        stream: counter(),
+        builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
+          final data = snapshot.data;
+          if (data == null) return const SizedBox();
+          return _Array2D();
+        },
+      ),
+    );
+  }
+}
+
+Stream<Array2D> counter() async* {
+  Array2D array = Array2D(10, 10)
+    ..set(0, 0, 1)
+    ..set(1, 1, 1)
+    ..set(2, 2, 1)
+    ..set(3, 3, 1)
+    ..set(4, 4, 1)
+    ..set(5, 5, 1);
+
+  for (var i = 0; i < 10; i++) {
+    await Future.delayed(const Duration(seconds: 1));
+    array = array.translateRight();
+    yield array;
+  }
+}
+
+class _Array2D extends StatelessWidget {
+  //final Array2D data;
+
+  const _Array2D();
+
+  @override
+  Widget build(BuildContext context) {
+    const double edge = double.infinity;
+    return  Column(
+      children: [
+        Expanded(
+          child: Row(
             children: [
-              Text(
-                'PLOP',
-                style: Theme.of(context).textTheme.headlineMedium,
+              Expanded(
+                child: Container(color: Colors.blue, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.red, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.green, width: edge, height: edge),
               ),
             ],
           ),
-        ));
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(color: Colors.red, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.green, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.blue, width: edge, height: edge),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(color: Colors.green, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.blue, width: edge, height: edge),
+              ),
+              Expanded(
+                child: Container(color: Colors.red, width: edge, height: edge),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
