@@ -28,9 +28,6 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: _Array2D(),
-    );
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -41,7 +38,7 @@ class MyHomePage extends StatelessWidget {
         builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
           final data = snapshot.data;
           if (data == null) return const SizedBox();
-          return _Array2D();
+          return _Array2D(data);
         },
       ),
     );
@@ -49,77 +46,48 @@ class MyHomePage extends StatelessWidget {
 }
 
 Stream<Array2D> counter() async* {
-  Array2D array = Array2D(10, 10)
+  const edge = 10;
+  Array2D array = Array2D(edge, edge)
     ..set(0, 0, 1)
     ..set(1, 1, 1)
     ..set(2, 2, 1)
     ..set(3, 3, 1)
     ..set(4, 4, 1)
-    ..set(5, 5, 1);
+    ..set(5, 5, 1)
+  ;
 
-  for (var i = 0; i < 10; i++) {
-    await Future.delayed(const Duration(seconds: 1));
+  for (var i = 0; i < 100; i++) {
+    await Future.delayed(const Duration(milliseconds: 500));
     array = array.translateRight();
     yield array;
   }
 }
 
 class _Array2D extends StatelessWidget {
-  //final Array2D data;
+  final Array2D data;
 
-  const _Array2D();
+  const _Array2D(this.data);
 
   @override
   Widget build(BuildContext context) {
     const double edge = double.infinity;
-    return  Column(
-      children: [
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(color: Colors.blue, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.red, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.green, width: edge, height: edge),
-              ),
-            ],
+    final columnChildren = <Widget>[];
+    for (var y = 0; y < data.height; y++) {
+      final rowChildren = <Widget>[];
+      for (var x = 0; x < data.width; x++) {
+        rowChildren.add(
+          Expanded(
+            child: Container(
+              color: data.get(x, y) == 1 ? Colors.blue : Colors.transparent,
+              width: edge,
+              height: edge,
+            ),
           ),
-        ),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(color: Colors.red, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.green, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.blue, width: edge, height: edge),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(color: Colors.green, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.blue, width: edge, height: edge),
-              ),
-              Expanded(
-                child: Container(color: Colors.red, width: edge, height: edge),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+        );
+      }
+      columnChildren.add(Expanded(child: Row(children: rowChildren)));
+    }
+
+    return Column(children: columnChildren);
   }
 }

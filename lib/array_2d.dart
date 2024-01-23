@@ -1,16 +1,16 @@
 class Array2D {
   final int width;
   final int height;
-  final List<List<int>> _data;
+  final List<List<double>> _data;
 
-  Array2D(this.width, this.height) : _data = List.generate(height, (x) => List.generate(width, (y) => 1));
+  Array2D(this.width, this.height) : _data = List.generate(height, (x) => List.generate(width, (y) => 0));
 
-  int get(int x, int y) {
+  double get(int x, int y) {
     if (x < 0 || x >= width || y < 0 || y >= height) return 0;
     return _data[y][x];
   }
 
-  void set(int x, int y, int value) {
+  void set(int x, int y, double value) {
     if (x < 0 || x >= width || y < 0 || y >= height) return;
     _data[y][x] = value;
   }
