@@ -28,66 +28,69 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    const cellEdge = 4.0;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
       ),
       body: StreamBuilder<Array2D>(
-        stream: counter(),
+        stream: counter(width ~/ cellEdge, height ~/ cellEdge),
         builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
           final data = snapshot.data;
           if (data == null) return const SizedBox();
-          return _Array2D(data);
+
+          return SizedBox(
+            width: width,
+            height: height,
+            child: CustomPaint(painter: _Array2DPaint(data)),
+          );
         },
       ),
     );
   }
 }
 
-Stream<Array2D> counter() async* {
-  const edge = 10;
-  Array2D array = Array2D(edge, edge)
+Stream<Array2D> counter(int width, int height) async* {
+  Array2D array = Array2D(width, height)
     ..set(0, 0, 1)
     ..set(1, 1, 1)
     ..set(2, 2, 1)
     ..set(3, 3, 1)
     ..set(4, 4, 1)
-    ..set(5, 5, 1)
-  ;
+    ..set(5, 5, 1);
 
-  for (var i = 0; i < 100; i++) {
-    await Future.delayed(const Duration(milliseconds: 500));
+  for (var i = 0; i < 1000; i++) {
+    await Future.delayed(const Duration(milliseconds: 16));
     array = array.translateRight();
     yield array;
   }
 }
 
-class _Array2D extends StatelessWidget {
+class _Array2DPaint extends CustomPainter {
   final Array2D data;
 
-  const _Array2D(this.data);
+  _Array2DPaint(this.data);
 
   @override
-  Widget build(BuildContext context) {
-    const double edge = double.infinity;
-    final columnChildren = <Widget>[];
-    for (var y = 0; y < data.height; y++) {
-      final rowChildren = <Widget>[];
-      for (var x = 0; x < data.width; x++) {
-        rowChildren.add(
-          Expanded(
-            child: Container(
-              color: data.get(x, y) == 1 ? Colors.blue : Colors.transparent,
-              width: edge,
-              height: edge,
-            ),
-          ),
-        );
-      }
-      columnChildren.add(Expanded(child: Row(children: rowChildren)));
-    }
+  void paint(Canvas canvas, Size size) {
+    final height = size.height/data.height;
+    final width = size.width/data.width;
+    final paint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.fill;
 
-    return Column(children: columnChildren);
+    for (var y = 0; y < data.height; y++) {
+      for (var x = 0; x < data.width; x++) {
+        if (data.get(x, y) == 1) {
+          canvas.drawRect(Rect.fromLTWH(x * width, y * height, width, height), paint);
+        }
+      }
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

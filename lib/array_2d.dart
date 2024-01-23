@@ -11,14 +11,30 @@ class Array2D {
   }
 
   void set(int x, int y, double value) {
-    if (x < 0 || x >= width || y < 0 || y >= height) return;
-    _data[y][x] = value;
+    final int newX, newY;
+    if (x < 0) {
+      newX = 1;
+    } else if (x >= width ) {
+      newX = width - 2;
+    } else {
+      newX = x;
+    }
+
+    if (y < 0) {
+      newY = 1;
+    } else if (y >= height) {
+      newY = height - 2;
+    } else {
+      newY = y;
+    }
+
+    _data[newY][newX] = value;
   }
 
   Array2D translateRight() {
     final newArray = Array2D(width, height);
     for (var y = 0; y < height; y++) {
-      for (var x = 1; x < width; x++) {
+      for (var x = 0; x < width; x++) {
         if (get(x, y) == 1) {
           newArray.set(x, y, 0);
           newArray.set(x + 1, y, 1);
