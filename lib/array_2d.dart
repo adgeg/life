@@ -23,18 +23,23 @@ class Array2D extends Equatable {
     return array2d;
   }
 
-  factory Array2D.fromDataWithEdge(List<String> data, int edge) {
-    final array2d = Array2D(edge, edge);
-    for (var y = 0; y < data.length; y++) {
-      for (var x = 0; x < data[0].length; x++) {
-        array2d.set(x, y, data[y][x] == '1' ? 1 : 0);
-      }
-    }
-    return array2d;
+  factory Array2D.random(int width, int height) {
+    return Array2D._(List.generate(height, (y) => List.generate(width, (x) => Random().nextBool() ? 1 : 0)));
   }
 
-  factory Array2D.random(int width, int height){
-    return Array2D._(List.generate(height, (x) => List.generate(width, (y) => Random().nextBool() ? 1 : 0)));
+  factory Array2D.randomCentered(int width, int height) {
+    final widthThird = width ~/ 3;
+    final heightThird = height ~/ 3;
+
+    return Array2D._(List.generate(height, (y) {
+      if (y > heightThird && y < 2 * heightThird) {
+        return List.generate(width, (x) {
+          if (x > widthThird && x < 2 * widthThird) return Random().nextBool() ? 1 : 0;
+          return 0;
+        });
+      }
+      return List.generate(width, (x) => 0);
+    }));
   }
 
   int get count {
@@ -55,17 +60,17 @@ class Array2D extends Equatable {
   void set(int x, int y, double value) {
     final int newX, newY;
     if (x < 0) {
-      newX = width - 1;
+      newX = width + x;
     } else if (x >= width) {
-      newX = 0;
+      newX = x - width;
     } else {
       newX = x;
     }
 
     if (y < 0) {
-      newY = height - 1;
+      newY = height + y;
     } else if (y >= height) {
-      newY = 0;
+      newY = y - height;
     } else {
       newY = y;
     }
@@ -79,7 +84,21 @@ class Array2D extends Equatable {
       for (var x = 0; x < width; x++) {
         if (get(x, y) == 1) {
           newArray.set(x, y, 0);
-          newArray.set(x + 1, y, 1);
+          newArray.set(x - 1, y + 1, 1);
+        }
+      }
+    }
+    return newArray;
+  }
+
+  Array2D withFilledEdges() {
+    final newArray = Array2D(width, height);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        if (y == 0 || y == height - 1 || x == 0 || x == width - 1) {
+          newArray.set(x, y, 1);
+        } else {
+          newArray.set(x, y, get(x, y));
         }
       }
     }

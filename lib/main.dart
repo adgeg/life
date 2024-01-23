@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Scaffold(
         body: StreamBuilder<Array2D>(
-          stream: counter(width ~/ cellEdge, height ~/ cellEdge),
+          stream: stream(width ~/ cellEdge, height ~/ cellEdge),
           builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
             final data = snapshot.data;
             if (data == null) return const SizedBox();
@@ -100,8 +100,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-Stream<Array2D> counter(int width, int height) async* {
-  Array2D array = Array2D.random(width, height);
+Stream<Array2D> stream(int width, int height) async* {
+  Array2D array = Array2D.randomCentered(width, height).withFilledEdges();
+  array = Array2D(width, height).withFilledEdges();
 
   while (true) {
     await Future.delayed(const Duration(milliseconds: 16));
