@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:life/array_2d.dart';
 import 'package:life/game.dart';
@@ -35,37 +37,74 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const int _framesSkippedForCalculation = -10;
+
+  int _minLivingCells = double.maxFinite.toInt();
+  int _maxLivingCells = _framesSkippedForCalculation;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     const cellEdge = 2.0;
-    return Scaffold(
+    return SafeArea(
+      child: Scaffold(
         body: StreamBuilder<Array2D>(
           stream: counter(width ~/ cellEdge, height ~/ cellEdge),
           builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
             final data = snapshot.data;
             if (data == null) return const SizedBox();
-
-            return SizedBox(
-              width: width,
-              height: height,
-              child: CustomPaint(painter: _Array2DPaint(data)),
+            final count = data.count;
+            // Skip the first frames (with random data)
+            if (_maxLivingCells < 0) {
+              _maxLivingCells++;
+            } else {
+              _minLivingCells = min(_minLivingCells, count);
+              _maxLivingCells = max(_maxLivingCells, count);
+            }
+            return Stack(
+              children: [
+                SizedBox(
+                  width: width,
+                  height: height,
+                  child: CustomPaint(painter: _Array2DPaint(data)),
+                ),
+                InformationLayer(
+                  count: count,
+                  minLivingCells: _minLivingCells,
+                  maxLivingCells: _maxLivingCells,
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white),
+                      ),
+                      onPressed: () => setState(() {
+                        _minLivingCells = double.maxFinite.toInt();
+                        _maxLivingCells = _framesSkippedForCalculation;
+                      }),
+                      child: const Text('Restart'),
+                    ),
+                  ),
+                )
+              ],
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => setState(() {}),
-          child: const Icon(Icons.restart_alt),
-        ));
+      ),
+    );
   }
 }
 
 Stream<Array2D> counter(int width, int height) async* {
   Array2D array = Array2D.random(width, height);
 
-  while(true) {
-    await Future.delayed(const Duration(milliseconds: 16 *4));
+  while (true) {
+    await Future.delayed(const Duration(milliseconds: 16));
     array = process(array);
     yield array;
   }
@@ -95,4 +134,68 @@ class _Array2DPaint extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class InformationLayer extends StatefulWidget {
+  final int count;
+  final int minLivingCells;
+  final int maxLivingCells;
+
+  const InformationLayer({
+    super.key,
+    required this.count,
+    required this.minLivingCells,
+    required this.maxLivingCells,
+  });
+
+  @override
+  State<InformationLayer> createState() => _InformationLayerState();
+}
+
+class _InformationLayerState extends State<InformationLayer> {
+  double _opacity = 0.2;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => _opacity = _opacity == 0.2 ? 0.0 : 0.2),
+      child: Container(
+        color: Colors.black.withOpacity(_opacity),
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Living cells: ${widget.count}',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
+              ),
+              Visibility(
+                visible: widget.maxLivingCells > 0,
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
+                child: Text(
+                  'Min: ${widget.minLivingCells}',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
+                ),
+              ),
+              Visibility(
+                visible: widget.maxLivingCells > 0,
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
+                child: Text(
+                  'Max: ${widget.maxLivingCells}',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
