@@ -1,5 +1,8 @@
+// ignore_for_file: prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:life/array_2d.dart';
+import 'package:life/game.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,55 +19,54 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'Life'),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    const cellEdge = 4.0;
+    const cellEdge = 2.0;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(title),
-      ),
-      body: StreamBuilder<Array2D>(
-        stream: counter(width ~/ cellEdge, height ~/ cellEdge),
-        builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
-          final data = snapshot.data;
-          if (data == null) return const SizedBox();
+        body: StreamBuilder<Array2D>(
+          stream: counter(width ~/ cellEdge, height ~/ cellEdge),
+          builder: (BuildContext context, AsyncSnapshot<Array2D> snapshot) {
+            final data = snapshot.data;
+            if (data == null) return const SizedBox();
 
-          return SizedBox(
-            width: width,
-            height: height,
-            child: CustomPaint(painter: _Array2DPaint(data)),
-          );
-        },
-      ),
-    );
+            return SizedBox(
+              width: width,
+              height: height,
+              child: CustomPaint(painter: _Array2DPaint(data)),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => setState(() {}),
+          child: const Icon(Icons.restart_alt),
+        ));
   }
 }
 
 Stream<Array2D> counter(int width, int height) async* {
-  Array2D array = Array2D(width, height)
-    ..set(0, 0, 1)
-    ..set(1, 1, 1)
-    ..set(2, 2, 1)
-    ..set(3, 3, 1)
-    ..set(4, 4, 1)
-    ..set(5, 5, 1);
+  Array2D array = Array2D.random(width, height);
 
-  for (var i = 0; i < 1000; i++) {
-    await Future.delayed(const Duration(milliseconds: 16));
-    array = array.translateRight();
+  while(true) {
+    await Future.delayed(const Duration(milliseconds: 16 *4));
+    array = process(array);
     yield array;
   }
 }
@@ -76,8 +78,8 @@ class _Array2DPaint extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final height = size.height/data.height;
-    final width = size.width/data.width;
+    final height = size.height / data.height;
+    final width = size.width / data.width;
     final paint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
