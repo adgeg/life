@@ -101,8 +101,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 Stream<Array2D> stream(int width, int height) async* {
-  Array2D array = Array2D.randomCentered(width, height).withFilledEdges();
-  array = Array2D(width, height).withFilledEdges();
+  Array2D array = Array2D(width, height);
+  //array = Array2D.randomCentered(width, height);
+  //array = Array2D.square(width, height);
+  //array = Array2D.circle(width, height);
+  //array = Array2D.donut(width, height);
+  //array = Array2D.filledEdges(width, height);
+  array = Array2D.filledEdges(width, height).merge(Array2D.donut(width, height));
 
   while (true) {
     await Future.delayed(const Duration(milliseconds: 16));

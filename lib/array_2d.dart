@@ -31,15 +31,70 @@ class Array2D extends Equatable {
     final widthThird = width ~/ 3;
     final heightThird = height ~/ 3;
 
-    return Array2D._(List.generate(height, (y) {
-      if (y > heightThird && y < 2 * heightThird) {
-        return List.generate(width, (x) {
-          if (x > widthThird && x < 2 * widthThird) return Random().nextBool() ? 1 : 0;
-          return 0;
-        });
+    final array = Array2D(width, height);
+    for (var y = heightThird; y < 2 * heightThird; y++) {
+      for (var x = widthThird; x < 2 * widthThird; x++) {
+        array.set(x, y, 1);
       }
-      return List.generate(width, (x) => 0);
-    }));
+    }
+
+     return array;
+  }
+
+  factory Array2D.filledEdges(int width, int height) {
+    final array = Array2D(width, height);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        if (y == 0 || y == height - 1 || x == 0 || x == width - 1) {
+          array.set(x, y, 1);
+        }
+      }
+    }
+    return array;
+  }
+
+  factory Array2D.square(int width, int height) {
+    final array = Array2D(width, height);
+    final widthThird = width ~/ 3;
+    final heightThird = height ~/ 3;
+    for (var y = heightThird; y < 2 * heightThird; y++) {
+      for (var x = widthThird; x < 2 * widthThird; x++) {
+        array.set(x, y, 1);
+      }
+    }
+    return array;
+  }
+
+  factory Array2D.circle(int width, int height) {
+    final array = Array2D(width, height);
+    final radius = min(width, height) ~/ 4;
+    final centerX = width ~/ 2;
+    final centerY = height ~/ 2;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final distance = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2));
+        if (distance < radius) {
+          array.set(x, y, 1);
+        }
+      }
+    }
+    return array;
+  }
+
+  factory Array2D.donut(int width, int height) {
+    final array = Array2D.circle(width, height);
+    final radius = min(width, height) ~/ 8;
+    final centerX = width ~/ 2;
+    final centerY = height ~/ 2;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final distance = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2));
+        if (distance < radius) {
+          array.set(x, y, 0);
+        }
+      }
+    }
+    return array;
   }
 
   int get count {
@@ -91,14 +146,13 @@ class Array2D extends Equatable {
     return newArray;
   }
 
-  Array2D withFilledEdges() {
+  Array2D merge(Array2D array){
     final newArray = Array2D(width, height);
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
-        if (y == 0 || y == height - 1 || x == 0 || x == width - 1) {
+
+        if (get(x, y) == 1 || array.get(x, y) == 1) {
           newArray.set(x, y, 1);
-        } else {
-          newArray.set(x, y, get(x, y));
         }
       }
     }
